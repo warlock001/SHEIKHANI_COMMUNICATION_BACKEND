@@ -11,12 +11,14 @@ const mongoose = require("mongoose");
 
 const signupRouter = require("./routes/signup");
 const loginRouter = require("./routes/login");
+const userRouter = require("./routes/user");
 
 
 app.use(cors());
 app.use(express.json());
 app.use(signupRouter);
 app.use(loginRouter);
+app.use(userRouter);
 
 
 const socketIO = require("socket.io")(http, {
@@ -61,15 +63,21 @@ socketIO.on("connection", (socket) => {
 		socket.emit("roomsList", chatRooms);
 	});
 
-	socket.on("findRoom", (id) => {
-		let result = chatRooms.filter((room) => room.id == id);
+	socket.on("findRoom", (data) => {
+
+		let result = chatRooms.filter((room) => room.id == data.id);
 		// console.log(chatRooms);
-		socket.emit("foundRoom", result[0].messages ? result[0].messages : []);
+		if (result.length == 0) {
+			socket.join(data.name);
+			chatRooms.unshift({ id: data.id, name: data.name, sender: data.sender, messages: data.roomMessages ? data.roomMessages : [] });
+			result = chatRooms.filter((room) => room.id == data.id);
+		}
+		socket.emit("foundRoom", result[0]?.messages ? result[0].messages : []);
 		// console.log("Messages Form", result[0].messages);
 	});
 
 	socket.on("newMessage", (data) => {
-		console.log(data)
+		// console.log(data)
 		const { room_id, message, user, timestamp } = data;
 		let result = chatRooms.filter((room) => room.id == room_id);
 		const newMessage = {
@@ -78,7 +86,7 @@ socketIO.on("connection", (socket) => {
 			user,
 			time: `${timestamp.hour}:${timestamp.mins}`,
 		};
-		console.log("New Message", newMessage);
+		// console.log("New Message", newMessage);
 		socket.to(result[0].name).emit("roomMessage", newMessage);
 		result[0].messages.push(newMessage);
 
@@ -92,7 +100,9 @@ socketIO.on("connection", (socket) => {
 });
 
 app.get("/api", (req, res) => {
+	console.log(chatRooms)
 	res.json(chatRooms);
+
 });
 
 http.listen(PORT, () => {

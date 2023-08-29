@@ -35,6 +35,7 @@ class LoginController {
                 email: existingUser.email,
                 role: existingUser.role,
                 firstName: user[0].firstName,
+                department: user[0].department,
                 _id: user[0]._id,
                 token: token,
                 isVerified: user[0].isVerified,
