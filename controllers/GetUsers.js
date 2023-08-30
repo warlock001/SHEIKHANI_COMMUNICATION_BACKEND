@@ -22,19 +22,22 @@ class UsersController {
                 });
             }
 
-        } else if (department != undefined) {
+        } else if (department != undefined && id != undefined) {
             console.log(query)
             console.log(department)
             if (query != '') {
                 console.log("first")
                 var user = await User.find({
+                    "_id": { $ne: id },
                     department: department,
-                    firstName: { $regex: '.*' + query + '.*', $options: 'i' }
+                    firstName: { $regex: '.*' + query + '.*', $options: 'i' },
+
                 }).limit(5);
             } else {
                 console.log("second")
                 var user = await User.find({
-                    department: department
+                    "_id": { $ne: id },
+                    department: department,
                 }).limit(5);
             }
 

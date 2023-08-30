@@ -57,9 +57,9 @@ let chatRooms = [];
 socketIO.on("connection", (socket) => {
 	console.log(`⚡: ${socket.id} user just connected!`);
 
-	socket.on("createRoom", (name) => {
-		socket.join(name);
-		chatRooms.unshift({ id: generateID(), name, messages: [] });
+	socket.on("createRoom", (room) => {
+		socket.join(room);
+		chatRooms.unshift({ id: generateID(), room, messages: [] });
 		socket.emit("roomsList", chatRooms);
 	});
 
@@ -68,8 +68,8 @@ socketIO.on("connection", (socket) => {
 		let result = chatRooms.filter((room) => room.id == data.id);
 		// console.log(chatRooms);
 		if (result.length == 0) {
-			socket.join(data.name);
-			chatRooms.unshift({ id: data.id, name: data.name, sender: data.sender, messages: data.roomMessages ? data.roomMessages : [] });
+			socket.join(data.roomName);
+			chatRooms.unshift({ id: data.id, room: data.roomName, name: data.name, sender: data.sender, messages: data.roomMessages ? data.roomMessages : [] });
 			result = chatRooms.filter((room) => room.id == data.id);
 		}
 		socket.emit("foundRoom", result[0]?.messages ? result[0].messages : []);
@@ -87,7 +87,7 @@ socketIO.on("connection", (socket) => {
 			time: `${timestamp.hour}:${timestamp.mins}`,
 		};
 		// console.log("New Message", newMessage);
-		socket.to(result[0].name).emit("roomMessage", newMessage);
+		socket.to(result[0].roomName).emit("roomMessage", newMessage);
 		result[0].messages.push(newMessage);
 
 		socket.emit("roomsList", chatRooms);
