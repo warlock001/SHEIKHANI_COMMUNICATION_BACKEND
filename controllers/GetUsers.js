@@ -5,24 +5,7 @@ class UsersController {
 
         const { id, department, query } = req.query;
         console.log(department)
-        if (id != undefined && id.match(/^[0-9a-fA-F]{24}$/)) {
-
-            var user = await User.find({
-                _id: id,
-            })
-
-            if (user && user.length > 0) {
-                res.status(200).json({
-                    message: "Sucess",
-                    user: user,
-                });
-            } else {
-                res.status(200).json({
-                    message: "No Record found",
-                });
-            }
-
-        } else if (department != undefined && id != undefined) {
+        if (department != undefined && id != undefined) {
             console.log(query)
             console.log(department)
             if (query != '') {
@@ -34,7 +17,7 @@ class UsersController {
 
                 }).limit(5);
             } else {
-                console.log("second")
+                console.log(id)
                 var user = await User.find({
                     "_id": { $ne: id },
                     department: department,
