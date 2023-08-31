@@ -5,7 +5,7 @@ const loginRouter = require("express").Router();
 loginRouter.post(
     "/login",
 
-    body("email").isEmail(),
+    body("email").trim().isEmail(),
 
     async (req, res) => {
         const errors = validationResult(req);

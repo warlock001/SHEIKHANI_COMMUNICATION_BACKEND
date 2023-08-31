@@ -10,7 +10,7 @@ class LoginController {
 
     if (email != undefined && password != undefined) {
       const existingUser = await Credential.findOne({
-        email: email.toLowerCase(),
+        email: email.toLowerCase().trim(),
       });
       console.log(existingUser);
       if (existingUser) {
@@ -18,7 +18,7 @@ class LoginController {
 
         console.log(user);
         await bcrypt
-          .compare(password, existingUser.password)
+          .compare(password.trim(), existingUser.password)
           .then(function (result) {
             if (result == true) {
               const token = jwt.sign(
