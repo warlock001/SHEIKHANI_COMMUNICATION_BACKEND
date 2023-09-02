@@ -42,6 +42,10 @@ const UserSchema = mongoose.Schema({
         type: Boolean,
         required: true,
     },
+    allMessages: {
+        type: Array,
+        default: []
+    },
     profilePicture: [
         {
             type: mongoose.Schema.Types.ObjectId,

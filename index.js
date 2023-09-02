@@ -5,6 +5,11 @@ const http = require("http").Server(app);
 const cors = require("cors");
 const PORT = 4000;
 
+
+//models//
+const RecentChats = require("./models/recentChats");
+
+
 dotenv.config();
 
 const mongoose = require("mongoose");
@@ -12,6 +17,9 @@ const mongoose = require("mongoose");
 const signupRouter = require("./routes/signup");
 const loginRouter = require("./routes/login");
 const userRouter = require("./routes/user");
+const saveMessage = require("./routes/saveMessage");
+const getMessage = require("./routes/getMessage");
+const userMessages = require("./routes/userMessages");
 
 
 app.use(cors());
@@ -19,6 +27,9 @@ app.use(express.json());
 app.use(signupRouter);
 app.use(loginRouter);
 app.use(userRouter);
+app.use(saveMessage);
+app.use(getMessage);
+app.use(userMessages);
 
 
 const socketIO = require("socket.io")(http, {
@@ -57,6 +68,54 @@ let chatRooms = [];
 socketIO.on("connection", (socket) => {
 	console.log(`⚡: ${socket.id} user just connected!`);
 
+	socket.on("join_room", (data) => {
+		console.log("User with id", socket.id, "Join room -", data.roomid)
+		socket.join(data.roomid);
+	});
+
+	socket.on("send_message", (data) => {
+		console.log("Message Recieved - ", data)
+		socketIO.to(data.roomId).emit("receive_message", data);
+
+		// chats={
+		// 	user,
+		// 	lastMessage,
+		// 	newMessages,
+		// }
+
+		////updating sender chats///
+		RecentChats.find({ user: data.senderid }).then(results => {
+			if (results.length == 0) {
+
+				const recentChats = new RecentChats({
+					user: data.senderid,
+					chats: [{
+						user: data.recieverid,
+						lastMessage: data.message,
+						newMessages: 1,
+					}]
+				});
+
+				recentChats.save()
+
+			} else {
+				let targetChat = results.chats.filter((item) => {
+					return item.user == data.recieverid
+				})
+
+				if (targetChat) {
+					var index = results.chats.indexOf(3452);
+					targetChat.lastMessage == data.message
+					targetChat.newMessages == targetChat.newMessages + 1
+
+					results
+				}
+			}
+		})
+
+	});
+
+	/////////////////////////////////////////////////////////////////old code /////////////////
 	socket.on("createRoom", (room) => {
 		socket.join(room);
 		chatRooms.unshift({ id: generateID(), room, messages: [] });
