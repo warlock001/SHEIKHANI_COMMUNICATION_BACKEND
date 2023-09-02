@@ -1,11 +1,11 @@
-const PostMessageController = require("../controllers/PostMessageController");
+const GetRecentChats = require("../controllers/GetRecentChats");
 
-const saveMessageRouter = require("express").Router();
+const recentChatsRouter = require("express").Router();
 
-saveMessageRouter.post("/saveMessage", async (req, res) => {
-    PostMessageController.Execute(req, res);
+recentChatsRouter.get("/recentChats", async (req, res) => {
+    GetRecentChats.Execute(req, res);
 });
 
 
 
-module.exports = saveMessageRouter;
+module.exports = recentChatsRouter;

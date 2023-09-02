@@ -1,10 +1,10 @@
 
-const GetRecentChats = require("../controllers/GetRecentChats");
-const getRecentChatsRouter = require("express").Router();
+const GetMessageController = require("../controllers/GetMessageController");
+const getMessagesRouter = require("express").Router();
 
 
-getRecentChatsRouter.get("/getRecentChats", async (req, res) => {
-    GetRecentChats.Execute(req, res);
+getMessagesRouter.get("/getMessage", async (req, res) => {
+    GetMessageController.Execute(req, res);
 });
 
-module.exports = getRecentChatsRouter;
+module.exports = getMessagesRouter;

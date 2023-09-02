@@ -20,6 +20,7 @@ const userRouter = require("./routes/user");
 const saveMessage = require("./routes/saveMessage");
 const getMessage = require("./routes/getMessage");
 const userMessages = require("./routes/userMessages");
+const recentChats = require("./routes/recentChats");
 
 
 app.use(cors());
@@ -84,38 +85,71 @@ socketIO.on("connection", (socket) => {
 		// }
 
 		////updating sender chats///
-		RecentChats.find({ user: data.senderid }).then(results => {
+		RecentChats.find({ user: data.message.senderid }).then(async results => {
 			if (results.length == 0) {
 
 				const recentChats = new RecentChats({
-					user: data.senderid,
+					user: data.message.senderid,
 					chats: [{
-						user: data.recieverid,
-						lastMessage: data.message,
-						newMessages: 1,
+						user: data.message.recieverid,
+						lastMessage: data.message.message,
+						newMessages: 0
 					}]
-				});
+				})
 
 				recentChats.save()
 
 			} else {
-				let targetChat = results.chats.filter((item) => {
-					return item.user == data.recieverid
+				let targetChat = results[0].chats.filter((item) => {
+					return item.user == data.message.recieverid
 				})
+				console.log("All Chats,", JSON.stringify(results))
+				console.log("chats found,", targetChat)
+				if (targetChat.length !== 0) {
+					targetChat[0].lastMessage = data.message.message
+					targetChat[0].newMessages = 0
 
-				if (targetChat) {
-					var index = results.chats.indexOf(3452);
-					targetChat.lastMessage == data.message
-					targetChat.newMessages == targetChat.newMessages + 1
+					results[0].chats = results[0].chats.map(item => {
+						console.log(item.user)
+						console.log(data.message.recieverid)
+						return item.user !== data.message.recieverid ? item : targetChat[0]
+					})
+					console.log(JSON.stringify(results))
 
-					results
+					await RecentChats.findOneAndUpdate(
+						{ 'user': data.message.senderid },
+						{
+							$set:
+							{
+								chats: results[0].chats
+							}
+						})
+
+				} else {
+
+					results[0].chats.push({
+						user: data.message.recieverid,
+						lastMessage: data.message.message,
+						newMessages: 0,
+					})
+
+					console.log(JSON.stringify(results))
+
+					await RecentChats.findOneAndUpdate(
+						{ 'user': data.message.senderid },
+						{
+							$set:
+							{
+								chats: results[0].chats
+							}
+						})
 				}
 			}
 		})
 
 	});
 
-	/////////////////////////////////////////////////////////////////old code /////////////////
+	//////////////////old code /////////////////
 	socket.on("createRoom", (room) => {
 		socket.join(room);
 		chatRooms.unshift({ id: generateID(), room, messages: [] });
