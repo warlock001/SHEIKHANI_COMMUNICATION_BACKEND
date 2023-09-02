@@ -39,6 +39,7 @@ class LoginController {
                 _id: user[0]._id,
                 token: token,
                 isVerified: user[0].isVerified,
+                profilePicture: user[0].profilePicture[0],
               });
             } else {
               res.status(400).send({

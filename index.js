@@ -5,10 +5,8 @@ const http = require("http").Server(app);
 const cors = require("cors");
 const PORT = 4000;
 
-
 //models//
 const RecentChats = require("./models/recentChats");
-
 
 dotenv.config();
 
@@ -20,7 +18,9 @@ const userRouter = require("./routes/user");
 const saveMessage = require("./routes/saveMessage");
 const getMessage = require("./routes/getMessage");
 const userMessages = require("./routes/userMessages");
-const recentChats = require("./routes/recentChats");
+const profilePicture = require("./routes/profilePicture");
+const file = require("./routes/file");
+const upload = require("./middleware/upload"); const recentChats = require("./routes/recentChats");
 
 
 app.use(cors());
@@ -31,7 +31,8 @@ app.use(userRouter);
 app.use(saveMessage);
 app.use(getMessage);
 app.use(userMessages);
-
+app.use(file);
+app.use(profilePicture(upload));
 
 const socketIO = require("socket.io")(http, {
 	cors: {
@@ -43,7 +44,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
-
 var server = app.listen(process.env.API_PORT, (error) => {
 	if (error) {
 		console.error("Error Occurred while connecting to server: ", error);
@@ -52,16 +52,16 @@ var server = app.listen(process.env.API_PORT, (error) => {
 
 		console.log("Trying to connect to database server...");
 
-		mongoose.connect(process.env.DB_CONNECTION_STRING).then(() => {
-			console.log("Connected to Database Successfully!");
-		}).catch((err) => {
-			console.error("Error Occurred while connecting to database: ", err);
-		})
+		mongoose
+			.connect(process.env.DB_CONNECTION_STRING)
+			.then(() => {
+				console.log("Connected to Database Successfully!");
+			})
+			.catch((err) => {
+				console.error("Error Occurred while connecting to database: ", err);
+			});
 	}
 });
-
-
-
 
 const generateID = () => Math.random().toString(36).substring(2, 10);
 let chatRooms = [];
@@ -70,12 +70,12 @@ socketIO.on("connection", (socket) => {
 	console.log(`⚡: ${socket.id} user just connected!`);
 
 	socket.on("join_room", (data) => {
-		console.log("User with id", socket.id, "Join room -", data.roomid)
+		console.log("User with id", socket.id, "Join room -", data.roomid);
 		socket.join(data.roomid);
 	});
 
 	socket.on("send_message", (data) => {
-		console.log("Message Recieved - ", data)
+		console.log("Message Recieved - ", data);
 		socketIO.to(data.roomId).emit("receive_message", data);
 
 		// chats={
@@ -157,12 +157,17 @@ socketIO.on("connection", (socket) => {
 	});
 
 	socket.on("findRoom", (data) => {
-
 		let result = chatRooms.filter((room) => room.id == data.id);
 		// console.log(chatRooms);
 		if (result.length == 0) {
 			socket.join(data.roomName);
-			chatRooms.unshift({ id: data.id, room: data.roomName, name: data.name, sender: data.sender, messages: data.roomMessages ? data.roomMessages : [] });
+			chatRooms.unshift({
+				id: data.id,
+				room: data.roomName,
+				name: data.name,
+				sender: data.sender,
+				messages: data.roomMessages ? data.roomMessages : [],
+			});
 			result = chatRooms.filter((room) => room.id == data.id);
 		}
 		socket.emit("foundRoom", result[0]?.messages ? result[0].messages : []);
@@ -193,9 +198,8 @@ socketIO.on("connection", (socket) => {
 });
 
 app.get("/api", (req, res) => {
-	console.log(chatRooms)
+	console.log(chatRooms);
 	res.json(chatRooms);
-
 });
 
 http.listen(PORT, () => {
