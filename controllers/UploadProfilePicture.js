@@ -25,18 +25,17 @@ class UploadProfilePictureController {
                 profilePicture: result._id,
               },
             }
-          ).then((response) => {
-            res
-              .status(200)
-              .json({
+          )
+            .then((response) => {
+              res.status(200).json({
                 message: response,
-              })
-              .catch((err) => {
-                res.status(400).send({
-                  message: err,
-                });
               });
-          });
+            })
+            .catch((err) => {
+              res.status(400).send({
+                message: err,
+              });
+            });
         })
         .catch((err) => {
           res.status(400).send({
