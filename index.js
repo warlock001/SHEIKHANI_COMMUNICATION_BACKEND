@@ -7,6 +7,7 @@ const PORT = 4000;
 
 //models//
 const RecentChats = require("./models/recentChats");
+const Message = require("./models/message");
 
 dotenv.config();
 
@@ -19,8 +20,9 @@ const saveMessage = require("./routes/saveMessage");
 const getMessage = require("./routes/getMessage");
 const userMessages = require("./routes/userMessages");
 const profilePicture = require("./routes/profilePicture");
+const recentChats = require("./routes/recentChats");
 const file = require("./routes/file");
-const upload = require("./middleware/upload"); const recentChats = require("./routes/recentChats");
+const upload = require("./middleware/upload");
 
 
 app.use(cors());
@@ -31,6 +33,7 @@ app.use(userRouter);
 app.use(saveMessage);
 app.use(getMessage);
 app.use(userMessages);
+app.use(recentChats)
 app.use(file);
 app.use(profilePicture(upload));
 
@@ -93,7 +96,8 @@ socketIO.on("connection", (socket) => {
 					chats: [{
 						user: data.message.recieverid,
 						lastMessage: data.message.message,
-						newMessages: 0
+						newMessages: 0,
+						time: new Date()
 					}]
 				})
 
@@ -108,6 +112,7 @@ socketIO.on("connection", (socket) => {
 				if (targetChat.length !== 0) {
 					targetChat[0].lastMessage = data.message.message
 					targetChat[0].newMessages = 0
+					targetChat[0].time = new Date()
 
 					results[0].chats = results[0].chats.map(item => {
 						console.log(item.user)
@@ -131,6 +136,7 @@ socketIO.on("connection", (socket) => {
 						user: data.message.recieverid,
 						lastMessage: data.message.message,
 						newMessages: 0,
+						time: new Date()
 					})
 
 					console.log(JSON.stringify(results))
@@ -146,6 +152,119 @@ socketIO.on("connection", (socket) => {
 				}
 			}
 		})
+
+		////updating reciever chats///
+
+		RecentChats.find({ user: data.message.recieverid }).then(async results => {
+			if (results.length == 0) {
+
+				const recentChats = new RecentChats({
+					user: data.message.recieverid,
+					chats: [{
+						user: data.message.senderid,
+						lastMessage: data.message.message,
+						newMessages: 1,
+						time: new Date()
+					}]
+				})
+
+				recentChats.save()
+
+			} else {
+				let targetChat = results[0].chats.filter((item) => {
+					return item.user == data.message.senderid
+				})
+				console.log("All Chats,", JSON.stringify(results))
+				console.log("chats found,", targetChat)
+				if (targetChat.length !== 0) {
+					targetChat[0].lastMessage = data.message.message
+					targetChat[0].newMessages = targetChat[0].newMessages + 1
+					targetChat[0].time = new Date()
+
+					results[0].chats = results[0].chats.map(item => {
+						console.log(item.user)
+						console.log(data.message.senderid)
+						return item.user !== data.message.senderid ? item : targetChat[0]
+					})
+					console.log(JSON.stringify(results))
+
+					await RecentChats.findOneAndUpdate(
+						{ 'user': data.message.recieverid },
+						{
+							$set:
+							{
+								chats: results[0].chats
+							}
+						})
+
+				} else {
+
+					results[0].chats.push({
+						user: data.message.senderid,
+						lastMessage: data.message.message,
+						newMessages: 1,
+						time: new Date()
+					})
+
+					console.log(JSON.stringify(results))
+
+					await RecentChats.findOneAndUpdate(
+						{ 'user': data.message.recieverid },
+						{
+							$set:
+							{
+								chats: results[0].chats
+							}
+						})
+				}
+			}
+		})
+
+	});
+
+
+	socket.on("read_receipt", async (data) => {
+		await Message.updateMany(
+			{ roomid: data.roomid },
+			{
+				$set:
+				{
+					seen: true
+				}
+			}
+		)
+
+		await RecentChats.find(
+			{ user: data.id }
+		).then(async res => {
+			if (res.length !== 0) {
+				let targetChat = res[0].chats.filter((item) => {
+					return item.user == data.recipient
+				})
+
+				if (targetChat.length !== 0) {
+					targetChat[0].newMessages = 0
+
+
+					res[0].chats = res[0].chats.map(item => {
+						return item.user !== data.recipient ? item : targetChat[0]
+					})
+
+					await RecentChats.findOneAndUpdate(
+						{ 'user': data.id },
+						{
+							$set:
+							{
+								chats: res[0].chats
+							}
+						})
+
+				}
+			}
+		})
+
+		socketIO.to(data.roomid).emit("update_read_receipt", data);
+
 
 	});
 
