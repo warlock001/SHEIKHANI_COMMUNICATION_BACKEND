@@ -23,7 +23,9 @@ class MessagesController {
                 senderid,
                 message,
                 roomid,
-                recieverid
+                recieverid,
+                seen: false,
+                delivered: false,
             });
 
             messageObj.save().then(response => {

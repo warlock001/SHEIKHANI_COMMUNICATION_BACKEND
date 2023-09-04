@@ -5,7 +5,7 @@ class UsersController {
 
         const { id, department, query } = req.query;
         console.log(department)
-        if (department != undefined && id != undefined) {
+        if (department != undefined && id != undefined && id.match(/^[0-9a-fA-F]{24}$/)) {
             console.log(query)
             console.log(department)
             if (query != '') {
@@ -26,6 +26,22 @@ class UsersController {
 
 
             if (user && user.length > 0) {
+                res.status(200).json({
+                    message: "Sucess",
+                    user: user,
+                });
+            } else {
+                res.status(200).json({
+                    message: "No Record found",
+                });
+            }
+
+        } else if (id != undefined && id.match(/^[0-9a-fA-F]{24}$/)) {
+            var user = await User.findOne({
+                '_id': id
+            })
+
+            if (user) {
                 res.status(200).json({
                     message: "Sucess",
                     user: user,

@@ -7,7 +7,7 @@ class GetUserMessagesController {
             res.status(400).json({
                 message: `Invalid Request`,
             });
-        } else {
+        } else if (id && id.match(/^[0-9a-fA-F]{24}$/)) {
             User.find({ _id: id }).then(result => {
                 res.status(200).json({
                     messages: result.allMessages,
