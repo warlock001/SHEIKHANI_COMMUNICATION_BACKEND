@@ -77,6 +77,11 @@ socketIO.on("connection", (socket) => {
 		socket.join(data.roomid);
 	});
 
+	socket.on("leave_room", (data) => {
+		console.log("User with id", socket.id, "left room -", data.roomid);
+		socket.leave(data.roomid);
+	});
+
 	socket.on("send_message", (data) => {
 		console.log("Message Recieved - ", data);
 		socketIO.to(data.roomId).emit("receive_message", data);
