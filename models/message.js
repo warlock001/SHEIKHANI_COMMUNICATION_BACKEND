@@ -17,7 +17,7 @@ const messageSchema = mongoose.Schema({
     recieverid: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: true
+        required: false
     },
     seen: {
         type: Boolean,

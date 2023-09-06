@@ -23,6 +23,7 @@ const profilePicture = require("./routes/profilePicture");
 const recentChats = require("./routes/recentChats");
 const group = require("./routes/group");
 const file = require("./routes/file");
+const groupMember = require("./routes/groupMember");
 const upload = require("./middleware/upload");
 
 
@@ -37,6 +38,7 @@ app.use(userMessages);
 app.use(recentChats)
 app.use(file);
 app.use(group);
+app.use(groupMember);
 app.use(profilePicture(upload));
 
 const socketIO = require("socket.io")(http, {

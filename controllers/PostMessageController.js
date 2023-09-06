@@ -13,8 +13,7 @@ class MessagesController {
         console.log("New Message - ", message)
         if (!senderid ||
             !message ||
-            !roomid ||
-            !recieverid) {
+            !roomid) {
             res.status(400).json({
                 message: `Invalid Request`,
             });
@@ -35,7 +34,8 @@ class MessagesController {
                 });
 
             }).catch((err) => {
-                return res.status(400).send(err, response);
+                console.log(err)
+                return res.status(400).send(err);
             })
         }
 

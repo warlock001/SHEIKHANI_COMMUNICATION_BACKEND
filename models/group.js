@@ -9,6 +9,11 @@ const groupSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    lastMessage: {
+        type: String,
+        required: false
+    },
+
 },
     { timestamps: true },
 );

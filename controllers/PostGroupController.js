@@ -1,4 +1,7 @@
 const Group = require("../models/group");
+const User = require("../models/user");
+
+
 class GroupController {
     static async Execute(req, res) {
 
@@ -15,11 +18,35 @@ class GroupController {
                 roomid: Date.now()
             })
 
-            group.save().then(() => {
+            group.save().then(async (response) => {
+
+                const user = await User.findOne({
+                    '_id': id
+                })
+                console.log(user)
+                user.groups.push(response._id)
+
+                console.log(user)
+
+                await User.findOneAndUpdate(
+                    { '_id': id },
+                    {
+                        $set:
+                        {
+                            groups: user.groups
+                        }
+                    }
+                ).catch(err => {
+                    console.log(err)
+                })
+
                 res.status(200).json({
                     message: `Message Saved Successfully`,
                 });
+
+
             }).catch(err => {
+                console.log(err)
                 return res.status(400).send(err);
             })
 
