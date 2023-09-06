@@ -42,8 +42,8 @@ const UserSchema = mongoose.Schema({
         type: Boolean,
         required: true,
     },
-    allMessages: {
-        type: Array,
+    groups: {
+        type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Groups' }],
         default: []
     },
     profilePicture: [
