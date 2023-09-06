@@ -4,7 +4,7 @@ const File = require("../models/file");
 class UploadProfilePictureController {
   static async Execute(req, res) {
     const { id } = req.body;
-
+    console.log(req.body)
     if (!id || !req.file) {
       res.status(200).json({
         message: "No Record found",
@@ -29,6 +29,7 @@ class UploadProfilePictureController {
             .then((response) => {
               res.status(200).json({
                 message: response,
+                id: result._id
               });
             })
             .catch((err) => {
