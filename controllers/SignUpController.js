@@ -17,7 +17,8 @@ class SignupController {
       role,
       password,
       confirmPassword,
-      department
+      department,
+      designation
     } = req.body;
 
     if (
@@ -29,6 +30,7 @@ class SignupController {
       !dialCode ||
       !role ||
       !department ||
+      !designation ||
       !password ||
       !confirmPassword
     ) {
@@ -45,7 +47,7 @@ class SignupController {
         isVerified: isVerified,
         dialCode: dialCode,
         department: department,
-
+        designation: designation,
         role: role.trim(),
       });
 

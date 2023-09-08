@@ -9,31 +9,44 @@ class GroupMemberController {
             roomid
         } = req.body;
 
-        if (id && id.match(/^[0-9a-fA-F]{24}$/) && roomid) {
+        if (id && Array.isArray(id) && roomid) {
 
-            const user = await User.findOne({
-                '_id': id
-            })
+            id.forEach(async id => {
 
-            const group = Group.findOne({
-                roomid: roomid
-            })
+                const user = await User.findOne({
+                    '_id': id
+                })
 
-            user.groups.push(group._id)
+                const group = await Group.findOne({
+                    roomid: roomid
+                })
+                console.log(group)
+                if (user) {
 
-            await User.findOneAndUpdate(
-                { '_id': id },
-                {
-                    $set:
-                    {
-                        groups: user.groups
+                    if (!user.groups.includes(group._id)) {
+                        user.groups.push(group._id)
                     }
+
+
+                    await User.findOneAndUpdate(
+                        { '_id': id },
+                        {
+                            $set:
+                            {
+                                groups: user.groups
+                            }
+                        }
+                    )
                 }
-            ).then(response => {
-                res.status(200).json({
-                    message: `User Added Successfully`,
-                });
-            })
+
+
+
+            });
+            res.status(200).json({
+                message: `User Added Successfully`,
+            });
+
+
         } else {
             res.status(400).json({
                 message: `Invalid Request`,

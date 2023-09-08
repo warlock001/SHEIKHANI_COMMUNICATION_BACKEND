@@ -16,7 +16,7 @@ class LoginController {
       if (existingUser) {
         const user = await User.find({ _id: existingUser.user });
 
-        console.log(user);
+        console.log("user", user);
         await bcrypt
           .compare(password.trim(), existingUser.password)
           .then(function (result) {
@@ -29,12 +29,14 @@ class LoginController {
                 process.env.ACCESS_TOKEN_JWT
               );
               res.setHeader("x-auth-token", token);
-              console.log(user[0].isVerified);
+
               res.status(200).send({
                 message: "Login Successful",
                 email: existingUser.email,
                 role: existingUser.role,
                 firstName: user[0].firstName,
+                lastName: user[0].lastName,
+                designation: user[0].designation,
                 department: user[0].department,
                 _id: user[0]._id,
                 token: token,

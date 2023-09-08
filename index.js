@@ -24,6 +24,7 @@ const recentChats = require("./routes/recentChats");
 const group = require("./routes/group");
 const file = require("./routes/file");
 const groupMember = require("./routes/groupMember");
+const password = require("./routes/password");
 const upload = require("./middleware/upload");
 
 
@@ -39,6 +40,7 @@ app.use(recentChats)
 app.use(file);
 app.use(group);
 app.use(groupMember);
+app.use(password);
 app.use(profilePicture(upload));
 
 const socketIO = require("socket.io")(http, {
@@ -284,23 +286,7 @@ socketIO.on("connection", (socket) => {
 		socket.emit("roomsList", chatRooms);
 	});
 
-	socket.on("findRoom", (data) => {
-		let result = chatRooms.filter((room) => room.id == data.id);
-		// console.log(chatRooms);
-		if (result.length == 0) {
-			socket.join(data.roomName);
-			chatRooms.unshift({
-				id: data.id,
-				room: data.roomName,
-				name: data.name,
-				sender: data.sender,
-				messages: data.roomMessages ? data.roomMessages : [],
-			});
-			result = chatRooms.filter((room) => room.id == data.id);
-		}
-		socket.emit("foundRoom", result[0]?.messages ? result[0].messages : []);
-		// console.log("Messages Form", result[0].messages);
-	});
+
 
 	socket.on("newMessage", (data) => {
 		// console.log(data)
@@ -319,6 +305,9 @@ socketIO.on("connection", (socket) => {
 		socket.emit("roomsList", chatRooms);
 		socket.emit("foundRoom", result[0].messages);
 	});
+
+
+
 	socket.on("disconnect", () => {
 		socket.disconnect();
 		console.log("🔥: A user disconnected");
