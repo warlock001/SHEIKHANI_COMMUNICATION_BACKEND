@@ -274,7 +274,7 @@ socketIO.on("connection", (socket) => {
 			}
 		})
 
-		socketIO.to(data.roomid).emit("update_read_receipt", data);
+		socketIO.broadcast.to(data.roomid).emit("update_read_receipt", data);
 
 
 	});
