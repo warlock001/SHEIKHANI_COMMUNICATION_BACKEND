@@ -235,6 +235,7 @@ socketIO.on("connection", (socket) => {
 
 
 	socket.on("read_receipt", async (data) => {
+		console.log("idr aa gya")
 		await Message.updateMany(
 			{ roomid: data.roomid },
 			{
