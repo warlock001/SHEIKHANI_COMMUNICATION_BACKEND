@@ -80,7 +80,9 @@ socketIO.on("connection", (socket) => {
 
 	socket.on("join_room", (data) => {
 		console.log("User with id", socket.id, "Join room -", data.roomid);
-		socket.join(data.roomid);
+		if (!socket.rooms.has('data.roomid')) {
+			socket.join(data.roomid);
+		}
 	});
 
 	socket.on("leave_room", (data) => {
