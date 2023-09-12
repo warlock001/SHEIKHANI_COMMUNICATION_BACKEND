@@ -80,9 +80,7 @@ socketIO.on("connection", (socket) => {
 
 	socket.on("join_room", (data) => {
 		console.log("User with id", socket.id, "Join room -", data.roomid);
-		if (!socket.rooms.has('data.roomid')) {
-			socket.join(data.roomid);
-		}
+		socket.join(data.roomid);
 	});
 
 	socket.on("leave_room", (data) => {
@@ -276,7 +274,7 @@ socketIO.on("connection", (socket) => {
 			}
 		})
 
-		socketIO.in(data.roomid).emit("update_read_receipt", data);
+		socket.broadcast.to(data.roomid).emit("update_read_receipt", data);
 
 
 	});
