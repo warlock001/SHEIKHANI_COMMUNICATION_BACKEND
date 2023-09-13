@@ -15,7 +15,8 @@ class GroupController {
 
             const group = new Group({
                 title: title,
-                roomid: Date.now()
+                roomid: Date.now(),
+                members: [id]
             })
 
             group.save().then(async (response) => {

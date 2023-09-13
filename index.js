@@ -8,6 +8,7 @@ const PORT = 4000;
 //models//
 const RecentChats = require("./models/recentChats");
 const Message = require("./models/message");
+const Group = require("./models/group");
 
 dotenv.config();
 
@@ -291,7 +292,7 @@ socketIO.on("connection", (socket) => {
 
 	/////////////////////Group Chats////////////////////////////
 
-	socket.on("send_message_group", (data) => {
+	socket.on("send_message_group", async (data) => {
 		console.log("Group Message Recieved - ", data);
 		socketIO.to(data.roomId).emit("receive_message", data);
 
@@ -316,7 +317,9 @@ socketIO.on("connection", (socket) => {
 					}]
 				})
 
-				recentChats.save()
+				recentChats.save().catch(err => {
+					console.log(err)
+				})
 
 			} else {
 				let targetChat = results[0].chats.filter((item) => {
@@ -343,6 +346,8 @@ socketIO.on("connection", (socket) => {
 							{
 								chats: results[0].chats
 							}
+						}).catch(err => {
+							console.log(err)
 						})
 
 				} else {
@@ -364,6 +369,10 @@ socketIO.on("connection", (socket) => {
 							{
 								chats: results[0].chats
 							}
+						}).then(res => {
+							console.log(res)
+						}).catch(err => {
+							console.log(err)
 						})
 				}
 			}
@@ -371,72 +380,91 @@ socketIO.on("connection", (socket) => {
 
 		////updating reciever chats///
 
-		// RecentChats.find({ user: data.message.recieverid }).then(async results => {
-		// 	if (results.length == 0) {
+		const group = await Group.findOne({
+			roomid: data.roomId
+		}).then(res => {
 
-		// 		const recentChats = new RecentChats({
-		// 			user: data.message.recieverid,
-		// 			chats: [{
-		// 				user: data.message.senderid,
-		// 				lastMessage: data.message.message,
-		// 				title: data.message.user,
-		// 				newMessages: 1,
-		// 				time: new Date()
-		// 			}]
-		// 		})
+			res.members.forEach(userId => {
 
-		// 		recentChats.save()
+				RecentChats.find({ user: userId }).then(async results => {
+					if (results.length == 0) {
 
-		// 	} else {
-		// 		let targetChat = results[0].chats.filter((item) => {
-		// 			return item.user == data.message.senderid
-		// 		})
-		// 		console.log("All Chats,", JSON.stringify(results))
-		// 		console.log("chats found,", targetChat)
-		// 		if (targetChat.length !== 0) {
-		// 			targetChat[0].lastMessage = data.message.message
-		// 			targetChat[0].newMessages = targetChat[0].newMessages + 1
-		// 			targetChat[0].time = new Date()
+						const recentChats = new RecentChats({
+							user: userId,
+							chats: [{
+								user: data.message.senderid,
+								lastMessage: data.message.message,
+								title: data.message.user,
+								newMessages: 1,
+								time: new Date()
+							}]
+						})
 
-		// 			results[0].chats = results[0].chats.map(item => {
-		// 				console.log(item.user)
-		// 				console.log(data.message.senderid)
-		// 				return item.user !== data.message.senderid ? item : targetChat[0]
-		// 			})
-		// 			console.log(JSON.stringify(results))
+						recentChats.save().catch(err => {
+							console.log(err)
+						})
 
-		// 			await RecentChats.findOneAndUpdate(
-		// 				{ 'user': data.message.recieverid },
-		// 				{
-		// 					$set:
-		// 					{
-		// 						chats: results[0].chats
-		// 					}
-		// 				})
+					} else {
+						let targetChat = results[0].chats.filter((item) => {
+							return item.user == data.message.senderid
+						})
+						console.log("All Chats,", JSON.stringify(results))
+						console.log("chats found,", targetChat)
+						if (targetChat.length !== 0) {
+							targetChat[0].lastMessage = data.message.message
+							targetChat[0].newMessages = targetChat[0].newMessages + 1
+							targetChat[0].time = new Date()
 
-		// 		} else {
+							results[0].chats = results[0].chats.map(item => {
+								console.log(item.user)
+								console.log(data.message.senderid)
+								return item.user !== data.message.senderid ? item : targetChat[0]
+							})
+							console.log(JSON.stringify(results))
 
-		// 			results[0].chats.push({
-		// 				user: data.message.senderid,
-		// 				lastMessage: data.message.message,
-		// 				title: data.message.user,
-		// 				newMessages: 1,
-		// 				time: new Date()
-		// 			})
+							await RecentChats.findOneAndUpdate(
+								{ 'user': userId },
+								{
+									$set:
+									{
+										chats: results[0].chats
+									}
+								}).catch(err => {
+									console.log(err)
+								})
 
-		// 			console.log(JSON.stringify(results))
+						} else {
 
-		// 			await RecentChats.findOneAndUpdate(
-		// 				{ 'user': data.message.recieverid },
-		// 				{
-		// 					$set:
-		// 					{
-		// 						chats: results[0].chats
-		// 					}
-		// 				})
-		// 		}
-		// 	}
-		// })
+							results[0].chats.push({
+								user: data.message.senderid,
+								lastMessage: data.message.message,
+								title: data.message.user,
+								newMessages: 1,
+								time: new Date()
+							})
+
+							console.log(JSON.stringify(results))
+
+							await RecentChats.findOneAndUpdate(
+								{ 'user': userId },
+								{
+									$set:
+									{
+										chats: results[0].chats
+									}
+								}).catch(err => {
+									console.log(err)
+								})
+						}
+					}
+				})
+
+			})
+		})
+
+
+
+
 
 	});
 

@@ -13,7 +13,10 @@ const groupSchema = mongoose.Schema({
         type: String,
         required: false
     },
-
+    members: {
+        type: Array,
+        required: false
+    }
 },
     { timestamps: true },
 );

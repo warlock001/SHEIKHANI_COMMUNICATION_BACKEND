@@ -38,10 +38,28 @@ class GroupMemberController {
                         }
                     )
                 }
-
-
-
             });
+
+            await Group.findOne({
+                roomid: roomid
+            }).then(async res => {
+                id.forEach(id => {
+                    if (!res.members.includes(id)) {
+                        res.members.push(id)
+                    }
+                })
+                await Group.findOneAndUpdate(
+                    { roomid: roomid },
+                    {
+                        members: res.members
+                    }
+                )
+            })
+
+
+
+
+
             res.status(200).json({
                 message: `User Added Successfully`,
             });
