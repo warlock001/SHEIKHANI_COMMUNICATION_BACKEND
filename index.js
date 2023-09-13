@@ -80,13 +80,18 @@ socketIO.on("connection", (socket) => {
 
 	socket.on("join_room", (data) => {
 		console.log("User with id", socket.id, "Join room -", data.roomid);
-		socket.join(data.roomid);
+		if (!socket.rooms.has(data.roomid)) {
+			socket.join(data.roomid);
+		}
+
 	});
 
 	socket.on("leave_room", (data) => {
 		console.log("User with id", socket.id, "left room -", data.roomid);
 		socket.leave(data.roomid);
 	});
+
+	//////////////////////////Direct Messaging///////////////
 
 	socket.on("send_message", (data) => {
 		console.log("Message Recieved - ", data);
@@ -107,6 +112,7 @@ socketIO.on("connection", (socket) => {
 					chats: [{
 						user: data.message.recieverid,
 						lastMessage: data.message.message,
+						title: data.message.title,
 						newMessages: 0,
 						time: new Date()
 					}]
@@ -146,6 +152,7 @@ socketIO.on("connection", (socket) => {
 					results[0].chats.push({
 						user: data.message.recieverid,
 						lastMessage: data.message.message,
+						title: data.message.title,
 						newMessages: 0,
 						time: new Date()
 					})
@@ -174,6 +181,7 @@ socketIO.on("connection", (socket) => {
 					chats: [{
 						user: data.message.senderid,
 						lastMessage: data.message.message,
+						title: data.message.user,
 						newMessages: 1,
 						time: new Date()
 					}]
@@ -213,6 +221,7 @@ socketIO.on("connection", (socket) => {
 					results[0].chats.push({
 						user: data.message.senderid,
 						lastMessage: data.message.message,
+						title: data.message.user,
 						newMessages: 1,
 						time: new Date()
 					})
@@ -235,7 +244,7 @@ socketIO.on("connection", (socket) => {
 
 
 	socket.on("read_receipt", async (data) => {
-		console.log("idr aa gya")
+		console.log("hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
 		await Message.updateMany(
 			{ roomid: data.roomid },
 			{
@@ -275,10 +284,163 @@ socketIO.on("connection", (socket) => {
 			}
 		})
 
-		socketIO.to(data.roomid).emit("update_read_receipt", data);
+		socket.broadcast.to(data.roomid).emit("update_read_receipt", data);
 
 
 	});
+
+	/////////////////////Group Chats////////////////////////////
+
+	socket.on("send_message_group", (data) => {
+		console.log("Group Message Recieved - ", data);
+		socketIO.to(data.roomId).emit("receive_message", data);
+
+		// chats={
+		// 	user,
+		// 	lastMessage,
+		// 	newMessages,
+		// }
+
+		////updating sender chats///
+		RecentChats.find({ user: data.message.senderid }).then(async results => {
+			if (results.length == 0) {
+
+				const recentChats = new RecentChats({
+					user: data.message.senderid,
+					chats: [{
+						user: data.roomId,
+						lastMessage: data.message.message,
+						title: data.message.title,
+						newMessages: 0,
+						time: new Date()
+					}]
+				})
+
+				recentChats.save()
+
+			} else {
+				let targetChat = results[0].chats.filter((item) => {
+					return item.user == data.roomId
+				})
+				console.log("All Chats,", JSON.stringify(results))
+				console.log("chats found,", targetChat)
+				if (targetChat.length !== 0) {
+					targetChat[0].lastMessage = data.message.message
+					targetChat[0].newMessages = 0
+					targetChat[0].time = new Date()
+
+					results[0].chats = results[0].chats.map(item => {
+						console.log(item.user)
+						console.log(data.roomId)
+						return item.user !== data.roomId ? item : targetChat[0]
+					})
+					console.log(JSON.stringify(results))
+
+					await RecentChats.findOneAndUpdate(
+						{ 'user': data.message.senderid },
+						{
+							$set:
+							{
+								chats: results[0].chats
+							}
+						})
+
+				} else {
+
+					results[0].chats.push({
+						user: data.roomId,
+						lastMessage: data.message.message,
+						title: data.message.title,
+						newMessages: 0,
+						time: new Date()
+					})
+
+					console.log(JSON.stringify(results))
+
+					await RecentChats.findOneAndUpdate(
+						{ 'user': data.message.senderid },
+						{
+							$set:
+							{
+								chats: results[0].chats
+							}
+						})
+				}
+			}
+		})
+
+		////updating reciever chats///
+
+		// RecentChats.find({ user: data.message.recieverid }).then(async results => {
+		// 	if (results.length == 0) {
+
+		// 		const recentChats = new RecentChats({
+		// 			user: data.message.recieverid,
+		// 			chats: [{
+		// 				user: data.message.senderid,
+		// 				lastMessage: data.message.message,
+		// 				title: data.message.user,
+		// 				newMessages: 1,
+		// 				time: new Date()
+		// 			}]
+		// 		})
+
+		// 		recentChats.save()
+
+		// 	} else {
+		// 		let targetChat = results[0].chats.filter((item) => {
+		// 			return item.user == data.message.senderid
+		// 		})
+		// 		console.log("All Chats,", JSON.stringify(results))
+		// 		console.log("chats found,", targetChat)
+		// 		if (targetChat.length !== 0) {
+		// 			targetChat[0].lastMessage = data.message.message
+		// 			targetChat[0].newMessages = targetChat[0].newMessages + 1
+		// 			targetChat[0].time = new Date()
+
+		// 			results[0].chats = results[0].chats.map(item => {
+		// 				console.log(item.user)
+		// 				console.log(data.message.senderid)
+		// 				return item.user !== data.message.senderid ? item : targetChat[0]
+		// 			})
+		// 			console.log(JSON.stringify(results))
+
+		// 			await RecentChats.findOneAndUpdate(
+		// 				{ 'user': data.message.recieverid },
+		// 				{
+		// 					$set:
+		// 					{
+		// 						chats: results[0].chats
+		// 					}
+		// 				})
+
+		// 		} else {
+
+		// 			results[0].chats.push({
+		// 				user: data.message.senderid,
+		// 				lastMessage: data.message.message,
+		// 				title: data.message.user,
+		// 				newMessages: 1,
+		// 				time: new Date()
+		// 			})
+
+		// 			console.log(JSON.stringify(results))
+
+		// 			await RecentChats.findOneAndUpdate(
+		// 				{ 'user': data.message.recieverid },
+		// 				{
+		// 					$set:
+		// 					{
+		// 						chats: results[0].chats
+		// 					}
+		// 				})
+		// 		}
+		// 	}
+		// })
+
+	});
+
+
 
 	//////////////////old code /////////////////
 	socket.on("createRoom", (room) => {
