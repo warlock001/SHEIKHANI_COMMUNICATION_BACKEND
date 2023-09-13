@@ -296,11 +296,6 @@ socketIO.on("connection", (socket) => {
 		console.log("Group Message Recieved - ", data);
 		socketIO.to(data.roomId).emit("receive_message", data);
 
-		// chats={
-		// 	user,
-		// 	lastMessage,
-		// 	newMessages,
-		// }
 
 		////updating sender chats///
 		RecentChats.find({ user: data.message.senderid }).then(async results => {
@@ -308,7 +303,7 @@ socketIO.on("connection", (socket) => {
 
 				const recentChats = new RecentChats({
 					user: data.message.senderid,
-					chats: [{
+					groups: [{
 						user: data.roomId,
 						lastMessage: data.message.message,
 						title: data.message.title,
@@ -322,17 +317,17 @@ socketIO.on("connection", (socket) => {
 				})
 
 			} else {
-				let targetChat = results[0].chats.filter((item) => {
+				let targetChat = results[0].groups.filter((item) => {
 					return item.user == data.roomId
 				})
 				console.log("All Chats,", JSON.stringify(results))
-				console.log("chats found,", targetChat)
+				console.log("groups found,", targetChat)
 				if (targetChat.length !== 0) {
 					targetChat[0].lastMessage = data.message.message
 					targetChat[0].newMessages = 0
 					targetChat[0].time = new Date()
 
-					results[0].chats = results[0].chats.map(item => {
+					results[0].groups = results[0].groups.map(item => {
 						console.log(item.user)
 						console.log(data.roomId)
 						return item.user !== data.roomId ? item : targetChat[0]
@@ -344,7 +339,7 @@ socketIO.on("connection", (socket) => {
 						{
 							$set:
 							{
-								chats: results[0].chats
+								groups: results[0].groups
 							}
 						}).catch(err => {
 							console.log(err)
@@ -352,7 +347,7 @@ socketIO.on("connection", (socket) => {
 
 				} else {
 
-					results[0].chats.push({
+					results[0].groups.push({
 						user: data.roomId,
 						lastMessage: data.message.message,
 						title: data.message.title,
@@ -367,7 +362,7 @@ socketIO.on("connection", (socket) => {
 						{
 							$set:
 							{
-								chats: results[0].chats
+								groups: results[0].groups
 							}
 						}).then(res => {
 							console.log(res)
@@ -391,7 +386,7 @@ socketIO.on("connection", (socket) => {
 
 						const recentChats = new RecentChats({
 							user: userId,
-							chats: [{
+							groups: [{
 								user: data.message.senderid,
 								lastMessage: data.message.message,
 								title: data.message.user,
@@ -405,17 +400,17 @@ socketIO.on("connection", (socket) => {
 						})
 
 					} else {
-						let targetChat = results[0].chats.filter((item) => {
+						let targetChat = results[0].groups.filter((item) => {
 							return item.user == data.message.senderid
 						})
 						console.log("All Chats,", JSON.stringify(results))
-						console.log("chats found,", targetChat)
+						console.log("groups found,", targetChat)
 						if (targetChat.length !== 0) {
 							targetChat[0].lastMessage = data.message.message
 							targetChat[0].newMessages = targetChat[0].newMessages + 1
 							targetChat[0].time = new Date()
 
-							results[0].chats = results[0].chats.map(item => {
+							results[0].groups = results[0].groups.map(item => {
 								console.log(item.user)
 								console.log(data.message.senderid)
 								return item.user !== data.message.senderid ? item : targetChat[0]
@@ -427,7 +422,7 @@ socketIO.on("connection", (socket) => {
 								{
 									$set:
 									{
-										chats: results[0].chats
+										groups: results[0].groups
 									}
 								}).catch(err => {
 									console.log(err)
@@ -435,7 +430,7 @@ socketIO.on("connection", (socket) => {
 
 						} else {
 
-							results[0].chats.push({
+							results[0].groups.push({
 								user: data.message.senderid,
 								lastMessage: data.message.message,
 								title: data.message.user,
@@ -450,7 +445,7 @@ socketIO.on("connection", (socket) => {
 								{
 									$set:
 									{
-										chats: results[0].chats
+										groups: results[0].groups
 									}
 								}).catch(err => {
 									console.log(err)

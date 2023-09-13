@@ -10,6 +10,10 @@ const recentChatsSchema = mongoose.Schema({
         type: Array,
         required: true
     },
+    groups: {
+        type: Array,
+        required: true
+    },
 },
     { timestamps: true },
 );
