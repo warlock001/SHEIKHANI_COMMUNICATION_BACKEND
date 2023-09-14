@@ -38,7 +38,7 @@ app.use(saveMessage);
 app.use(getMessage);
 app.use(userMessages);
 app.use(recentChats)
-app.use(file);
+app.use(file(upload));
 app.use(group);
 app.use(groupMember);
 app.use(password);

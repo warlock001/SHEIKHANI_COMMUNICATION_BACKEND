@@ -8,7 +8,10 @@ class MessagesController {
             senderid,
             message,
             roomid,
-            recieverid
+            recieverid,
+            title,
+            isPicture,
+            tags
         } = req.body;
         console.log("New Message - ", message)
         if (!senderid ||
@@ -21,10 +24,13 @@ class MessagesController {
             const messageObj = new Message({
                 senderid,
                 message,
+                title,
                 roomid,
                 recieverid,
                 seen: false,
                 delivered: false,
+                isPicture: isPicture,
+                tags: tags
             });
 
             messageObj.save().then(response => {

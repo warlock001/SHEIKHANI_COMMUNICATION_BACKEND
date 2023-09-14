@@ -6,6 +6,10 @@ const messageSchema = mongoose.Schema({
         ref: "User",
         required: true
     },
+    title: {
+        type: String,
+        required: false
+    },
     message: {
         type: String,
         required: true
@@ -27,6 +31,16 @@ const messageSchema = mongoose.Schema({
         type: Boolean,
         require: true
     },
+    isPicture: {
+        type: Boolean,
+        required: false,
+        default: false
+    },
+    tags: {
+        type: Array,
+        default: [],
+        required: false
+    }
 },
     { timestamps: true },
 );
