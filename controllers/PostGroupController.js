@@ -47,7 +47,7 @@ class GroupController {
 
                         const recentChats = new RecentChats({
                             user: id,
-                            chats: [{
+                            groups: [{
                                 user: response.roomid,
                                 lastMessage: '',
                                 title: title,

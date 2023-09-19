@@ -9,6 +9,7 @@ const PORT = 4000;
 const RecentChats = require("./models/recentChats");
 const Message = require("./models/message");
 const Group = require("./models/group");
+const Workspace = require("./models/workspace");
 
 dotenv.config();
 
@@ -23,10 +24,12 @@ const userMessages = require("./routes/userMessages");
 const profilePicture = require("./routes/profilePicture");
 const recentChats = require("./routes/recentChats");
 const group = require("./routes/group");
+const workspace = require("./routes/workspace");
 const file = require("./routes/file");
 const groupMember = require("./routes/groupMember");
 const password = require("./routes/password");
 const upload = require("./middleware/upload");
+const shiftGroupRouter = require("./routes/ShiftGroupToWorkspace");
 
 
 app.use(cors());
@@ -40,9 +43,11 @@ app.use(userMessages);
 app.use(recentChats)
 app.use(file(upload));
 app.use(group);
+app.use(workspace)
 app.use(groupMember);
 app.use(password);
 app.use(profilePicture(upload));
+app.use(shiftGroupRouter);
 
 const socketIO = require("socket.io")(http, {
 	cors: {
@@ -447,6 +452,183 @@ socketIO.on("connection", (socket) => {
 										$set:
 										{
 											groups: results[0].groups
+										}
+									}).catch(err => {
+										console.log(err)
+									})
+							}
+						}
+					})
+
+				}
+			})
+		})
+
+
+
+
+
+	});
+
+
+	/////////////////////Workspace Chats//////////////////////
+
+
+	socket.on("send_message_workspace", async (data) => {
+		console.log("workspace Message Recieved - ", data);
+		socketIO.to(data.roomId).emit("receive_message", data);
+
+
+		////updating sender chats///
+		await RecentChats.find({ user: data.message.senderid }).then(async results => {
+			if (results.length == 0) {
+
+				const recentChats = new RecentChats({
+					user: data.message.senderid,
+					workspaces: [{
+						user: data.roomId,
+						lastMessage: data.message.message,
+						title: data.message.title,
+						newMessages: 0,
+						time: new Date()
+					}]
+				})
+
+				await recentChats.save().catch(err => {
+					console.log(err)
+				})
+
+			} else {
+				let targetChat = results[0].workspaces.filter((item) => {
+					return item.user == data.roomId
+				})
+				console.log("All Chats,", JSON.stringify(results))
+				console.log("workspaces found,", targetChat)
+				if (targetChat.length !== 0) {
+					targetChat[0].lastMessage = data.message.message
+					targetChat[0].newMessages = 0
+					targetChat[0].time = new Date()
+
+					results[0].workspaces = results[0].workspaces.map(item => {
+						console.log(item.user)
+						console.log(data.roomId)
+						return item.user !== data.roomId ? item : targetChat[0]
+					})
+					console.log(JSON.stringify(results))
+
+					await RecentChats.findOneAndUpdate(
+						{ 'user': data.message.senderid },
+						{
+							$set:
+							{
+								workspaces: results[0].workspaces
+							}
+						}).catch(err => {
+							console.log(err)
+						})
+
+				} else {
+
+					results[0].workspaces.push({
+						user: data.roomId,
+						lastMessage: data.message.message,
+						title: data.message.title,
+						newMessages: 0,
+						time: new Date()
+					})
+
+					console.log(JSON.stringify(results))
+
+					await RecentChats.findOneAndUpdate(
+						{ 'user': data.message.senderid },
+						{
+							$set:
+							{
+								workspaces: results[0].workspaces
+							}
+						}).then(res => {
+							console.log(res)
+						}).catch(err => {
+							console.log(err)
+						})
+				}
+			}
+		})
+
+		////updating reciever chats///
+
+		const workspace = await Workspace.findOne({
+			roomid: data.roomId
+		}).then(res => {
+
+			res.members.forEach(async userId => {
+				if (userId != data.message.senderid) {
+
+					await RecentChats.find({ user: userId }).then(async results => {
+						if (results.length == 0) {
+
+							const recentChats = new RecentChats({
+								user: userId,
+								workspaces: [{
+									user: data.roomId,
+									lastMessage: data.message.message,
+									title: data.message.title,
+									newMessages: 1,
+									time: new Date()
+								}]
+							})
+
+							recentChats.save().catch(err => {
+								console.log(err)
+							})
+
+						} else {
+							let targetChat = results[0].workspaces.filter((item) => {
+								return item.user == data.roomId
+							})
+							console.log("All Chats,", JSON.stringify(results))
+							console.log("workspaces found,", targetChat)
+							if (targetChat.length !== 0) {
+								targetChat[0].lastMessage = data.message.message
+								targetChat[0].newMessages = targetChat[0].newMessages + 1
+								targetChat[0].time = new Date()
+
+								results[0].workspaces = results[0].workspaces.map(item => {
+									console.log(item.user)
+									console.log(data.message.senderid)
+									return item.user !== data.message.senderid ? item : targetChat[0]
+								})
+								console.log(JSON.stringify(results))
+
+								await RecentChats.findOneAndUpdate(
+									{ 'user': userId },
+									{
+										$set:
+										{
+											workspaces: results[0].workspaces
+										}
+									}).catch(err => {
+										console.log(err)
+									})
+
+							} else {
+
+								results[0].workspaces.push({
+									user: data.roomId,
+									lastMessage: data.message.message,
+									title: data.message.title,
+									newMessages: 1,
+									time: new Date()
+								})
+
+								console.log(JSON.stringify(results))
+
+								await RecentChats.findOneAndUpdate(
+									{ 'user': userId },
+									{
+										$set:
+										{
+											workspaces: results[0].workspaces
 										}
 									}).catch(err => {
 										console.log(err)

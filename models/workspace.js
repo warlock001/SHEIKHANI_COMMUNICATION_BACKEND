@@ -7,7 +7,8 @@ const workspaceSchema = mongoose.Schema({
     },
     roomid: {
         type: String,
-        required: true
+        required: true,
+        unique: true,
     },
     lastMessage: {
         type: String,
