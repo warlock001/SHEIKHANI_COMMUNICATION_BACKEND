@@ -4,7 +4,8 @@ const recentChatsSchema = mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: true
+        required: true,
+        unique: true,
     },
     chats: {
         type: Array,

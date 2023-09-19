@@ -298,7 +298,7 @@ socketIO.on("connection", (socket) => {
 
 
 		////updating sender chats///
-		RecentChats.find({ user: data.message.senderid }).then(async results => {
+		await RecentChats.find({ user: data.message.senderid }).then(async results => {
 			if (results.length == 0) {
 
 				const recentChats = new RecentChats({
@@ -312,7 +312,7 @@ socketIO.on("connection", (socket) => {
 					}]
 				})
 
-				recentChats.save().catch(err => {
+				await recentChats.save().catch(err => {
 					console.log(err)
 				})
 
@@ -379,81 +379,83 @@ socketIO.on("connection", (socket) => {
 			roomid: data.roomId
 		}).then(res => {
 
-			res.members.forEach(userId => {
+			res.members.forEach(async userId => {
+				if (userId != data.message.senderid) {
 
-				RecentChats.find({ user: userId }).then(async results => {
-					if (results.length == 0) {
+					await RecentChats.find({ user: userId }).then(async results => {
+						if (results.length == 0) {
 
-						const recentChats = new RecentChats({
-							user: userId,
-							groups: [{
-								user: data.message.senderid,
-								lastMessage: data.message.message,
-								title: data.message.user,
-								newMessages: 1,
-								time: new Date()
-							}]
-						})
-
-						recentChats.save().catch(err => {
-							console.log(err)
-						})
-
-					} else {
-						let targetChat = results[0].groups.filter((item) => {
-							return item.user == data.message.senderid
-						})
-						console.log("All Chats,", JSON.stringify(results))
-						console.log("groups found,", targetChat)
-						if (targetChat.length !== 0) {
-							targetChat[0].lastMessage = data.message.message
-							targetChat[0].newMessages = targetChat[0].newMessages + 1
-							targetChat[0].time = new Date()
-
-							results[0].groups = results[0].groups.map(item => {
-								console.log(item.user)
-								console.log(data.message.senderid)
-								return item.user !== data.message.senderid ? item : targetChat[0]
+							const recentChats = new RecentChats({
+								user: userId,
+								groups: [{
+									user: data.roomId,
+									lastMessage: data.message.message,
+									title: data.message.title,
+									newMessages: 1,
+									time: new Date()
+								}]
 							})
-							console.log(JSON.stringify(results))
 
-							await RecentChats.findOneAndUpdate(
-								{ 'user': userId },
-								{
-									$set:
-									{
-										groups: results[0].groups
-									}
-								}).catch(err => {
-									console.log(err)
-								})
+							recentChats.save().catch(err => {
+								console.log(err)
+							})
 
 						} else {
-
-							results[0].groups.push({
-								user: data.message.senderid,
-								lastMessage: data.message.message,
-								title: data.message.user,
-								newMessages: 1,
-								time: new Date()
+							let targetChat = results[0].groups.filter((item) => {
+								return item.user == data.roomId
 							})
+							console.log("All Chats,", JSON.stringify(results))
+							console.log("groups found,", targetChat)
+							if (targetChat.length !== 0) {
+								targetChat[0].lastMessage = data.message.message
+								targetChat[0].newMessages = targetChat[0].newMessages + 1
+								targetChat[0].time = new Date()
 
-							console.log(JSON.stringify(results))
-
-							await RecentChats.findOneAndUpdate(
-								{ 'user': userId },
-								{
-									$set:
-									{
-										groups: results[0].groups
-									}
-								}).catch(err => {
-									console.log(err)
+								results[0].groups = results[0].groups.map(item => {
+									console.log(item.user)
+									console.log(data.message.senderid)
+									return item.user !== data.message.senderid ? item : targetChat[0]
 								})
-						}
-					}
-				})
+								console.log(JSON.stringify(results))
 
+								await RecentChats.findOneAndUpdate(
+									{ 'user': userId },
+									{
+										$set:
+										{
+											groups: results[0].groups
+										}
+									}).catch(err => {
+										console.log(err)
+									})
+
+							} else {
+
+								results[0].groups.push({
+									user: data.roomId,
+									lastMessage: data.message.message,
+									title: data.message.title,
+									newMessages: 1,
+									time: new Date()
+								})
+
+								console.log(JSON.stringify(results))
+
+								await RecentChats.findOneAndUpdate(
+									{ 'user': userId },
+									{
+										$set:
+										{
+											groups: results[0].groups
+										}
+									}).catch(err => {
+										console.log(err)
+									})
+							}
+						}
+					})
+
+				}
 			})
 		})
 
