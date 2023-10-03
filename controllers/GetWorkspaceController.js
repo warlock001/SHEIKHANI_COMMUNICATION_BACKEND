@@ -34,9 +34,13 @@ class GetWorkspaceController {
                 });
             })
         } else {
-            res.status(400).json({
-                message: `Invalid Request`,
-            });
+            await Workspace.find().populate({
+                path: "members",
+            }).then(result => {
+                res.status(200).json({
+                    group: result,
+                });
+            })
         }
 
 
