@@ -682,7 +682,41 @@ socketIO.on("connection", (socket) => {
 
 	});
 
+	socket.on("read_receipt_workspace", async (data) => {
 
+
+		await RecentChats.find(
+			{ user: data.id }
+		).then(async res => {
+			if (res.length !== 0) {
+				let targetChat = res[0].workspaces.filter((item) => {
+					return item.user == data.recipient
+				})
+
+				if (targetChat.length !== 0) {
+					targetChat[0].newMessages = 0
+
+
+					res[0].workspaces = res[0].workspaces.map(item => {
+						return item.user !== data.recipient ? item : targetChat[0]
+					})
+
+					await RecentChats.findOneAndUpdate(
+						{ 'user': data.id },
+						{
+							$set:
+							{
+								workspaces: res[0].workspaces
+							}
+						})
+
+				}
+			}
+		})
+
+
+
+	});
 
 	//////////////////old code /////////////////
 	socket.on("createRoom", (room) => {
