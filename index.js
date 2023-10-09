@@ -494,7 +494,7 @@ socketIO.on("connection", (socket) => {
 						{
 							$set:
 							{
-								groups: res[0].chats
+								groups: res[0].groups
 							}
 						})
 
