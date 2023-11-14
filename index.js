@@ -31,6 +31,7 @@ const password = require("./routes/password");
 const upload = require("./middleware/upload");
 const shiftGroupRouter = require("./routes/ShiftGroupToWorkspace");
 const userDump = require("./routes/userdump")
+const SetPassword = require("./routes/SetPassword")
 
 app.use(cors());
 app.use(express.json());
@@ -49,6 +50,7 @@ app.use(password);
 app.use(profilePicture(upload));
 app.use(shiftGroupRouter);
 app.use(userDump)
+app.use(SetPassword)
 
 const socketIO = require("socket.io")(http, {
 	cors: {

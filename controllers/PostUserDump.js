@@ -127,7 +127,7 @@ class PostUserDumpController {
                                                 
                                                         <div style="max-width : 600px; margin:auto">
                                                             <div>
-                                                                <img src="https://sheikhanigroup.com/wp-content/uploads/2023/02/retina-business4-1.png" width="100%"/>
+                                                                <img src="https://sheikhanigroup.com/wp-content/uploads/2023/02/retina-business4-1.png" alt="Sheikhani Group LOGO" width="100%"/>
                                                             </div>
                                                 
                                                             <h3>Hello ${item[1]},</h3>
@@ -135,7 +135,7 @@ class PostUserDumpController {
                                                 
                                                             <p>Welcome aboard! We're thrilled to have you join our dynamic team and become a part of our company's vibrant community. As we embrace effective communication and collaboration, we're excited to introduce you to our internal chat app.</p>
                                                             <p>To get started, please set your password by clicking on the link below:</p>
-                                                            <a href="https://liptontaxcertify.com/setPassword/${encodeURIComponent(hash)}">
+                                                            <a href="http://test-sheikhani.it-ace.com/setPassword/${encodeURIComponent(hash)}">
                                                                 <button class="btn" style="background-color: #fec148; color : #000; font-weight: 500; font-size: 20px; padding : 10px 25px; border : unset; border-radius: 10px;" type="button">Verify Now</button>
                                                             </a>
                                                 
@@ -152,7 +152,7 @@ class PostUserDumpController {
                                                 
                                                 
                                                             <div style="text-align: center; margin-top:50px ;">
-                                                                <img width="350px" src="https://sheikhanigroup.com/wp-content/uploads/2023/02/retina-business4-1.png" alt="Lipton LOGO">
+                                                                <img width="350px" src="https://sheikhanigroup.com/wp-content/uploads/2023/02/retina-business4-1.png" alt="Sheikhani Group LOGO">
                                                                 <p style="font-size: 12px;">7478 Harwin Dr, Houston, Texas 77036, US</p>
                                                             </div>
                                                         </body>

@@ -71,7 +71,7 @@ class SignupController {
                 user: response._id,
                 email: response.email.trim(),
                 password: hash,
-                role: "employee",
+                role: role,
                 OTP: password,
               });
 
