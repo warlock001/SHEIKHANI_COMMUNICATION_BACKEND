@@ -30,7 +30,7 @@ const groupMember = require("./routes/groupMember");
 const password = require("./routes/password");
 const upload = require("./middleware/upload");
 const shiftGroupRouter = require("./routes/ShiftGroupToWorkspace");
-
+const userDump = require("./routes/userdump")
 
 app.use(cors());
 app.use(express.json());
@@ -48,6 +48,7 @@ app.use(groupMember);
 app.use(password);
 app.use(profilePicture(upload));
 app.use(shiftGroupRouter);
+app.use(userDump)
 
 const socketIO = require("socket.io")(http, {
 	cors: {
