@@ -20,7 +20,7 @@ class UsersController {
                 console.log(id)
                 var user = await User.find({
                     "_id": { $ne: id },
-                    department: department,
+                    // department: department,
                 }).limit(5);
             }
 
