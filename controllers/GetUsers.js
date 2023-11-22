@@ -12,7 +12,7 @@ class UsersController {
                 console.log("first")
                 var user = await User.find({
                     "_id": { $ne: id },
-                    department: department,
+                    // department: department,
                     firstName: { $regex: '.*' + query + '.*', $options: 'i' },
 
                 }).limit(5);
