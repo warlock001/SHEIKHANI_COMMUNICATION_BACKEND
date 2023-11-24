@@ -29,20 +29,20 @@ class ShiftGroupController {
                             result.members.forEach(member => {
                                 RecentChats.findOne({ user: member }).then(async chat => {
                                     console.log((chat))
-                                    let tempChat = chat.workspace.filter(obj => obj.user == roomid);
+                                    let tempChat = chat.workspaces.filter(obj => obj.user == roomid);
                                     if (chat.group) {
                                         chat.group.push(tempChat[0])
                                     } else {
                                         chat.group = [tempChat[0]]
                                     }
-                                    chat.workspace = chat.workspace.filter(obj => obj.user !== roomid);
+                                    chat.workspaces = chat.workspaces.filter(obj => obj.user !== roomid);
 
                                     await RecentChats.findOneAndUpdate(
                                         { 'user': member },
                                         {
                                             $set:
                                             {
-                                                workspace: chat.workspace,
+                                                workspaces: chat.workspaces,
                                                 group: chat.group
                                             }
                                         })
