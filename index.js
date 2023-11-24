@@ -492,36 +492,39 @@ socketIO.on("connection", (socket) => {
 
 	socket.on("read_receipt_group", async (data) => {
 
+		var lastSenderCheck = await Message.find({ roomid: data.roomid })
 
-		await RecentChats.find(
-			{ user: data.id }
-		).then(async res => {
-			if (res.length !== 0) {
-				let targetChat = res[0].groups.filter((item) => {
-					return item.user == data.recipient
-				})
+		if (lastSenderCheck[lastSenderCheck.length - 1].senderid == data.recipient) {
 
-				if (targetChat.length !== 0) {
-					targetChat[0].newMessages = 0
-
-
-					res[0].groups = res[0].groups.map(item => {
-						return item.user !== data.recipient ? item : targetChat[0]
+			await RecentChats.find(
+				{ user: data.id }
+			).then(async res => {
+				if (res.length !== 0) {
+					let targetChat = res[0].groups.filter((item) => {
+						return item.user == data.recipient
 					})
 
-					await RecentChats.findOneAndUpdate(
-						{ 'user': data.id },
-						{
-							$set:
-							{
-								groups: res[0].groups
-							}
+					if (targetChat.length !== 0) {
+						targetChat[0].newMessages = 0
+
+
+						res[0].groups = res[0].groups.map(item => {
+							return item.user !== data.recipient ? item : targetChat[0]
 						})
 
-				}
-			}
-		})
+						await RecentChats.findOneAndUpdate(
+							{ 'user': data.id },
+							{
+								$set:
+								{
+									groups: res[0].groups
+								}
+							})
 
+					}
+				}
+			})
+		}
 
 
 	});
