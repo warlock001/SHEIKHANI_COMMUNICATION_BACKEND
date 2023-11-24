@@ -35,7 +35,6 @@ class UpdatePasswordController {
                                     OTP: newPassword
                                 }
                             ).then(response => {
-                                console.log(response)
                                 res.status(200).json({
                                     message: "password updated successfully",
                                     user: response

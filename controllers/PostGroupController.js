@@ -25,10 +25,8 @@ class GroupController {
                 const user = await User.findOne({
                     '_id': id
                 })
-                console.log(user)
                 user.groups.push(response._id)
 
-                console.log(user)
 
                 await User.findOneAndUpdate(
                     { '_id': id },

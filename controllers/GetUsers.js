@@ -4,12 +4,8 @@ class UsersController {
     static async Execute(req, res) {
 
         const { id, department, query } = req.query;
-        console.log(department)
         if (department != undefined && id != undefined && id.match(/^[0-9a-fA-F]{24}$/)) {
-            console.log(query)
-            console.log(department)
             if (query != '') {
-                console.log("first")
                 var user = await User.find({
                     "_id": { $ne: id },
                     // department: department,
@@ -17,7 +13,6 @@ class UsersController {
 
                 }).limit(5);
             } else {
-                console.log(id)
                 var user = await User.find({
                     "_id": { $ne: id },
                     // department: department,

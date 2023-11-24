@@ -20,7 +20,6 @@ class PostUserDumpController {
 
             valuesArray.forEach(async item => {
 
-                console.log(item.length)
                 if (item.length == 8) {
 
                     await User.find({ email: item[3] }).then(async result => {
@@ -187,7 +186,6 @@ class PostUserDumpController {
                     res.status(400).json({
                         message: `Invalid Format`,
                     });
-                    console.log("here")
                 }
 
             })

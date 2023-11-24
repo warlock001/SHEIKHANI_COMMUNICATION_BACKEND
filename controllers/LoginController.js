@@ -5,18 +5,15 @@ const bcrypt = require("bcrypt");
 
 class LoginController {
   static async Execute(req, res) {
-    console.log(req.body);
     const { email, password } = req.body;
 
     if (email != undefined && password != undefined) {
       const existingUser = await Credential.findOne({
         email: email.toLowerCase().trim(),
       });
-      console.log(existingUser);
       if (existingUser) {
         const user = await User.find({ _id: existingUser.user });
 
-        console.log("user", user);
         await bcrypt
           .compare(password.trim(), existingUser.password)
           .then(function (result) {

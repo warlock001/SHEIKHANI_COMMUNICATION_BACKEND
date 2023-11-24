@@ -140,19 +140,14 @@ socketIO.on("connection", (socket) => {
 				let targetChat = results[0].chats.filter((item) => {
 					return item.user == data.message.recieverid
 				})
-				console.log("All Chats,", JSON.stringify(results))
-				console.log("chats found,", targetChat)
 				if (targetChat.length !== 0) {
 					targetChat[0].lastMessage = data.message.message
 					targetChat[0].newMessages = 0
 					targetChat[0].time = new Date()
 
 					results[0].chats = results[0].chats.map(item => {
-						console.log(item.user)
-						console.log(data.message.recieverid)
 						return item.user !== data.message.recieverid ? item : targetChat[0]
 					})
-					console.log(JSON.stringify(results))
 
 					await RecentChats.findOneAndUpdate(
 						{ 'user': data.message.senderid },
@@ -173,7 +168,6 @@ socketIO.on("connection", (socket) => {
 						time: new Date()
 					})
 
-					console.log(JSON.stringify(results))
 
 					await RecentChats.findOneAndUpdate(
 						{ 'user': data.message.senderid },
@@ -209,19 +203,14 @@ socketIO.on("connection", (socket) => {
 				let targetChat = results[0].chats.filter((item) => {
 					return item.user == data.message.senderid
 				})
-				console.log("All Chats,", JSON.stringify(results))
-				console.log("chats found,", targetChat)
 				if (targetChat.length !== 0) {
 					targetChat[0].lastMessage = data.message.message
 					targetChat[0].newMessages = targetChat[0].newMessages + 1
 					targetChat[0].time = new Date()
 
 					results[0].chats = results[0].chats.map(item => {
-						console.log(item.user)
-						console.log(data.message.senderid)
 						return item.user !== data.message.senderid ? item : targetChat[0]
 					})
-					console.log(JSON.stringify(results))
 
 					await RecentChats.findOneAndUpdate(
 						{ 'user': data.message.recieverid },
@@ -242,7 +231,6 @@ socketIO.on("connection", (socket) => {
 						time: new Date()
 					})
 
-					console.log(JSON.stringify(results))
 
 					await RecentChats.findOneAndUpdate(
 						{ 'user': data.message.recieverid },
@@ -345,19 +333,14 @@ socketIO.on("connection", (socket) => {
 				let targetChat = results[0].groups.filter((item) => {
 					return item.user == data.roomId
 				})
-				console.log("All Chats,", JSON.stringify(results))
-				console.log("groups found,", targetChat)
 				if (targetChat.length !== 0) {
 					targetChat[0].lastMessage = data.message.message
 					targetChat[0].newMessages = 0
 					targetChat[0].time = new Date()
 
 					results[0].groups = results[0].groups.map(item => {
-						console.log(item.user)
-						console.log(data.roomId)
 						return item.user !== data.roomId ? item : targetChat[0]
 					})
-					console.log(JSON.stringify(results))
 
 					await RecentChats.findOneAndUpdate(
 						{ 'user': data.message.senderid },
@@ -380,7 +363,6 @@ socketIO.on("connection", (socket) => {
 						time: new Date()
 					})
 
-					console.log(JSON.stringify(results))
 
 					await RecentChats.findOneAndUpdate(
 						{ 'user': data.message.senderid },
@@ -390,7 +372,6 @@ socketIO.on("connection", (socket) => {
 								groups: results[0].groups
 							}
 						}).then(res => {
-							console.log(res)
 						}).catch(err => {
 							console.log(err)
 						})
@@ -429,19 +410,14 @@ socketIO.on("connection", (socket) => {
 							let targetChat = results[0].groups.filter((item) => {
 								return item.user == data.roomId
 							})
-							console.log("All Chats,", JSON.stringify(results))
-							console.log("groups found,", targetChat)
 							if (targetChat.length !== 0) {
 								targetChat[0].lastMessage = data.message.message
 								targetChat[0].newMessages = targetChat[0].newMessages + 1
 								targetChat[0].time = new Date()
 
 								results[0].groups = results[0].groups.map(item => {
-									console.log(item.user)
-									console.log(data.message.senderid)
 									return item.user !== data.message.senderid ? item : targetChat[0]
 								})
-								console.log(JSON.stringify(results))
 
 								await RecentChats.findOneAndUpdate(
 									{ 'user': userId },
@@ -464,7 +440,6 @@ socketIO.on("connection", (socket) => {
 									time: new Date()
 								})
 
-								console.log(JSON.stringify(results))
 
 								await RecentChats.findOneAndUpdate(
 									{ 'user': userId },
@@ -492,39 +467,36 @@ socketIO.on("connection", (socket) => {
 
 	socket.on("read_receipt_group", async (data) => {
 
-		var lastSenderCheck = await Message.find({ roomid: data.roomid })
 
-		if (lastSenderCheck[lastSenderCheck.length - 1].senderid == data.recipient) {
+		await RecentChats.find(
+			{ user: data.id }
+		).then(async res => {
+			if (res.length !== 0) {
+				let targetChat = res[0].groups.filter((item) => {
+					return item.user == data.recipient
+				})
 
-			await RecentChats.find(
-				{ user: data.id }
-			).then(async res => {
-				if (res.length !== 0) {
-					let targetChat = res[0].groups.filter((item) => {
-						return item.user == data.recipient
+				if (targetChat.length !== 0) {
+					targetChat[0].newMessages = 0
+
+
+					res[0].groups = res[0].groups.map(item => {
+						return item.user !== data.recipient ? item : targetChat[0]
 					})
 
-					if (targetChat.length !== 0) {
-						targetChat[0].newMessages = 0
-
-
-						res[0].groups = res[0].groups.map(item => {
-							return item.user !== data.recipient ? item : targetChat[0]
+					await RecentChats.findOneAndUpdate(
+						{ 'user': data.id },
+						{
+							$set:
+							{
+								groups: res[0].groups
+							}
 						})
 
-						await RecentChats.findOneAndUpdate(
-							{ 'user': data.id },
-							{
-								$set:
-								{
-									groups: res[0].groups
-								}
-							})
-
-					}
 				}
-			})
-		}
+			}
+		})
+
 
 
 	});
@@ -560,19 +532,14 @@ socketIO.on("connection", (socket) => {
 				let targetChat = results[0].workspaces.filter((item) => {
 					return item.user == data.roomId
 				})
-				console.log("All Chats,", JSON.stringify(results))
-				console.log("workspaces found,", targetChat)
 				if (targetChat.length !== 0) {
 					targetChat[0].lastMessage = data.message.message
 					targetChat[0].newMessages = 0
 					targetChat[0].time = new Date()
 
 					results[0].workspaces = results[0].workspaces.map(item => {
-						console.log(item.user)
-						console.log(data.roomId)
 						return item.user !== data.roomId ? item : targetChat[0]
 					})
-					console.log(JSON.stringify(results))
 
 					await RecentChats.findOneAndUpdate(
 						{ 'user': data.message.senderid },
@@ -595,7 +562,6 @@ socketIO.on("connection", (socket) => {
 						time: new Date()
 					})
 
-					console.log(JSON.stringify(results))
 
 					await RecentChats.findOneAndUpdate(
 						{ 'user': data.message.senderid },
@@ -605,7 +571,6 @@ socketIO.on("connection", (socket) => {
 								workspaces: results[0].workspaces
 							}
 						}).then(res => {
-							console.log(res)
 						}).catch(err => {
 							console.log(err)
 						})
@@ -644,19 +609,14 @@ socketIO.on("connection", (socket) => {
 							let targetChat = results[0].workspaces.filter((item) => {
 								return item.user == data.roomId
 							})
-							console.log("All Chats,", JSON.stringify(results))
-							console.log("workspaces found,", targetChat)
 							if (targetChat.length !== 0) {
 								targetChat[0].lastMessage = data.message.message
 								targetChat[0].newMessages = targetChat[0].newMessages + 1
 								targetChat[0].time = new Date()
 
 								results[0].workspaces = results[0].workspaces.map(item => {
-									console.log(item.user)
-									console.log(data.message.senderid)
 									return item.user !== data.message.senderid ? item : targetChat[0]
 								})
-								console.log(JSON.stringify(results))
 
 								await RecentChats.findOneAndUpdate(
 									{ 'user': userId },
@@ -679,7 +639,6 @@ socketIO.on("connection", (socket) => {
 									time: new Date()
 								})
 
-								console.log(JSON.stringify(results))
 
 								await RecentChats.findOneAndUpdate(
 									{ 'user': userId },
@@ -777,7 +736,6 @@ socketIO.on("connection", (socket) => {
 });
 
 app.get("/api", (req, res) => {
-	console.log(chatRooms);
 	res.json(chatRooms);
 });
 

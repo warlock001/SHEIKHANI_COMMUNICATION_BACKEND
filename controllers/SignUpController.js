@@ -6,7 +6,6 @@ const saltRounds = 10;
 
 class SignupController {
   static async Execute(req, res) {
-    console.log(req.body);
     const {
       firstName,
       lastName,
@@ -38,7 +37,6 @@ class SignupController {
         message: `Invalid Request`,
       });
     } else {
-      console.log(req.body);
       const user = new User({
         firstName: firstName.trim(),
         lastName: lastName.trim(),

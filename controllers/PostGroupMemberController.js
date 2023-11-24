@@ -21,7 +21,6 @@ class GroupMemberController {
                 const group = await Group.findOne({
                     roomid: roomid
                 })
-                console.log(group)
                 if (user) {
 
                     if (!user.groups.includes(group._id)) {
