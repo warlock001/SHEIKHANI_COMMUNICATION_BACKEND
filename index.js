@@ -263,7 +263,7 @@ socketIO.on("connection", (socket) => {
 
 		var lastSenderCheck = await Message.find({ roomid: data.roomid })
 
-		if (lastSenderCheck[lastSenderCheck.length - 1].senderid !== data.recipient) {
+		if (lastSenderCheck[lastSenderCheck.length - 1].senderid == data.recipient) {
 
 
 
