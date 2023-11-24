@@ -260,48 +260,58 @@ socketIO.on("connection", (socket) => {
 
 
 	socket.on("read_receipt", async (data) => {
-		console.log("hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-		await Message.updateMany(
-			{ roomid: data.roomid },
-			{
-				$set:
+
+		var lastSenderCheck = await Message.find({ roomid: data.roomid })
+
+		if (lastSenderCheck[lastSenderCheck.length - 1].senderid !== data.recipient) {
+
+
+
+
+
+			await Message.updateMany(
+				{ roomid: data.roomid },
 				{
-					seen: true
+					$set:
+					{
+						seen: true
+					}
 				}
-			}
-		)
+			)
 
-		await RecentChats.find(
-			{ user: data.id }
-		).then(async res => {
-			if (res.length !== 0) {
-				let targetChat = res[0].chats.filter((item) => {
-					return item.user == data.recipient
-				})
-
-				if (targetChat.length !== 0) {
-					targetChat[0].newMessages = 0
-
-
-					res[0].chats = res[0].chats.map(item => {
-						return item.user !== data.recipient ? item : targetChat[0]
+			await RecentChats.find(
+				{ user: data.id }
+			).then(async res => {
+				if (res.length !== 0) {
+					let targetChat = res[0].chats.filter((item) => {
+						return item.user == data.recipient
 					})
 
-					await RecentChats.findOneAndUpdate(
-						{ 'user': data.id },
-						{
-							$set:
-							{
-								chats: res[0].chats
-							}
+					if (targetChat.length !== 0) {
+						targetChat[0].newMessages = 0
+
+
+						res[0].chats = res[0].chats.map(item => {
+							return item.user !== data.recipient ? item : targetChat[0]
 						})
 
+						await RecentChats.findOneAndUpdate(
+							{ 'user': data.id },
+							{
+								$set:
+								{
+									chats: res[0].chats
+								}
+							})
+
+					}
 				}
-			}
-		})
+			})
 
-		socket.broadcast.to(data.roomid).emit("update_read_receipt", data);
+			socket.broadcast.to(data.roomid).emit("update_read_receipt", data);
 
+
+		}
 
 	});
 
