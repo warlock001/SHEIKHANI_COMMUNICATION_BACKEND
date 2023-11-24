@@ -34,6 +34,7 @@ const userDump = require("./routes/userdump")
 const SetPassword = require("./routes/SetPassword")
 const Department = require("./routes/department")
 const Announcemnet = require("./routes/announcement")
+const ShiftWorkspaceRouter = require("./routes/ShiftWorkspaceToGroup")
 
 app.use(cors());
 app.use(express.json());
@@ -51,6 +52,7 @@ app.use(groupMember);
 app.use(password);
 app.use(profilePicture(upload));
 app.use(shiftGroupRouter);
+app.use(ShiftWorkspaceRouter)
 app.use(userDump)
 app.use(SetPassword)
 app.use(Department)
