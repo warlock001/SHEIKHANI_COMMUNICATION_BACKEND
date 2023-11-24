@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const Group = require("../models/group");
+const RecentChats = require("../models/recentChats");
 
 class GroupMemberController {
     static async Execute(req, res) {
@@ -55,6 +56,56 @@ class GroupMemberController {
                     }
                 )
             })
+
+
+            RecentChats.find({ user: id }).then(async results => {
+
+                const group = await Group.findOne({
+                    roomid: roomid
+                })
+
+                if (results.length == 0) {
+
+                    var recentChats = new RecentChats({
+                        user: id,
+                        groups: [{
+                            user: roomid,
+                            lastMessage: '',
+                            title: group.title,
+                            newMessages: 0,
+                            time: new Date()
+                        }]
+
+                    })
+
+                    await recentChats.save()
+
+                } else {
+
+                    var temp = results[0].groups
+                    temp.push({
+                        user: roomid,
+                        lastMessage: '',
+                        title: group.title,
+                        newMessages: 0,
+                        time: new Date()
+                    })
+
+
+                    RecentChats.findOneAndUpdate(
+                        { _id: results._id },
+                        {
+                            $set: {
+                                groups: temp
+                            },
+                        }
+                    )
+
+
+
+                }
+            })
+
 
 
 
