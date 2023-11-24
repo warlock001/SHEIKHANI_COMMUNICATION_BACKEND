@@ -27,8 +27,8 @@ class ShiftGroupController {
                         Workspace.findOneAndDelete({ roomid: roomid }).then(response => {
 
                             result.members.forEach(member => {
-                                console.log(member)
                                 RecentChats.findOne({ user: member }).then(async chat => {
+                                    console.log((chat))
                                     let tempChat = chat.workspace.filter(obj => obj.user == roomid);
                                     if (chat.group) {
                                         chat.group.push(tempChat[0])
