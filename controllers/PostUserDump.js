@@ -40,7 +40,7 @@ class PostUserDumpController {
                                     mobile: item[4],
                                     isVerified: false,
                                     dialCode: item[5],
-                                    role: 'user',
+                                    role: 'employee',
                                     department: item[6],
                                     designation: item[7]
                                 }).then(results => {
@@ -56,7 +56,7 @@ class PostUserDumpController {
                                                 user: results._id,
                                                 email: results.email.trim(),
                                                 password: hash,
-                                                role: 'user',
+                                                role: 'employee',
                                                 OTP: password,
                                             }
                                         ).then(async () => {
