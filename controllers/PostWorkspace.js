@@ -15,7 +15,8 @@ class PostWorkspaceController {
             const workspace = new Workspace({
                 title: title,
                 roomid: Date.now(),
-                members: members
+                members: members,
+                lastMessage: ''
             })
 
             await workspace.save().then(response => {

@@ -62,7 +62,7 @@ class PostUserDumpController {
                                         ).then(async () => {
 
                                             const mailOptions = {
-                                                from: 'info@artisan10x.com',
+                                                from: 'info@test-sheikhani.it-ace.com',
                                                 to: results.email,
                                                 subject: "Welcome to Sheikhani Group Communication!",
                                                 html: `
@@ -125,7 +125,7 @@ class PostUserDumpController {
                                                     <body>
                                                 
                                                         <div style="max-width : 600px; margin:auto">
-                                                            <div>
+                                                            <div style="background-color : #000">
                                                                 <img src="https://sheikhanigroup.com/wp-content/uploads/2023/02/retina-business4-1.png" alt="Sheikhani Group LOGO" width="100%"/>
                                                             </div>
                                                 
@@ -150,9 +150,9 @@ class PostUserDumpController {
                                                             </p>
                                                 
                                                 
-                                                            <div style="text-align: center; margin-top:50px ;">
+                                                            <div style="text-align: center; margin-top:50px; background-color : #000">
                                                                 <img width="350px" src="https://sheikhanigroup.com/wp-content/uploads/2023/02/retina-business4-1.png" alt="Sheikhani Group LOGO">
-                                                                <p style="font-size: 12px;">7478 Harwin Dr, Houston, Texas 77036, US</p>
+                                                                <p style="font-size: 12px; color : #fff">7478 Harwin Dr, Houston, Texas 77036, US</p>
                                                             </div>
                                                         </body>
                                                     </body>

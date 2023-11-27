@@ -35,6 +35,7 @@ const SetPassword = require("./routes/SetPassword")
 const Department = require("./routes/department")
 const Announcemnet = require("./routes/announcement")
 const ShiftWorkspaceRouter = require("./routes/ShiftWorkspaceToGroup")
+const filteredUsersRouter = require("./routes/filteredUsers")
 
 app.use(cors());
 app.use(express.json());
@@ -57,6 +58,7 @@ app.use(userDump)
 app.use(SetPassword)
 app.use(Department)
 app.use(Announcemnet)
+app.use(filteredUsersRouter)
 
 
 const socketIO = require("socket.io")(http, {
