@@ -34,9 +34,18 @@ class GetGroupsController {
                 });
             })
         } else {
-            res.status(400).json({
-                message: `Invalid Request`,
-            });
+            await Group.find().populate({
+                path: "members",
+            }).then(result => {
+                res.status(200).json({
+                    group: result,
+                });
+            }).catch(err => {
+                console.log(err)
+                res.status(400).json({
+                    message: err,
+                });
+            })
         }
 
 
